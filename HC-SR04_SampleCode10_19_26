@@ -1,0 +1,61 @@
+//Mostly Claude, but edited
+
+// Pin Definitions for ESP32-C3
+const int TRIG_PIN = 3;
+const int ECHO_PIN = 2;
+
+// Most ESP32-C3 dev boards use GPIO 8 for the built-in LED (active LOW on many boards).
+// Change this to match your board or an external LED pin.
+const int LED_PIN = 8;
+
+void setup() {
+  Serial.begin(115200);
+ 
+  pinMode(TRIG_PIN, OUTPUT);
+  pinMode(ECHO_PIN, INPUT);
+  pinMode(LED_PIN, OUTPUT);
+ 
+  digitalWrite(TRIG_PIN, LOW);
+  delay(50);
+}
+
+void loop() {
+  // Clear the trigger pin
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+ 
+  // Send a 10-microsecond high pulse
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+ 
+  // Read Echo pulse duration (timeout after ~30ms / ~5 meters)
+  long duration = pulseIn(ECHO_PIN, HIGH, 30000);
+  Serial.println(duration);
+ 
+  // Calculate distance in cm (Speed of sound ~ 0.0343 cm/us, divided by 2 for round trip)
+  float distanceCm = duration * 0.0343 / 2.0;
+
+  if (duration == 0) {
+    Serial.println("Out of range / No echo detected/ No item in box");
+    digitalWrite(LED_PIN, LOW);
+    delay(100);
+    return;
+  }
+
+  Serial.print("Distance: ");
+  Serial.print(distanceCm);
+  Serial.println(" cm");
+
+  // Proportional blinking:
+  // Closer objects (e.g., 5 cm) blink rapidly; farther objects (e.g., 50 cm) blink slowly.
+  int blinkDelay = map(constrain((int)distanceCm, 2, 80), 2, 80, 40, 600);
+  if (distanceCm < 20) {
+    digitalWrite(LED_PIN, HIGH);
+    delay(blinkDelay);
+    digitalWrite(LED_PIN, LOW);
+    delay(blinkDelay); 
+    Serial.println("Item detected");
+  }
+  
+}

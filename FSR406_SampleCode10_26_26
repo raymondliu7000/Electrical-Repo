@@ -1,0 +1,52 @@
+// Mostly written by Claude
+
+//Weight sensing with Interlink FSR 406
+
+const int   FSR_PIN  = 1;        // any ADC-capable pin
+const float VCC      = 3.3;
+const int   ADC_MAX  = 4095;     // 12-bit
+const float R_FIXED  = 10000.0;  // 10k pull-down
+
+// Calibration: grams ≈ K * (conductance in µS) ^ N
+// Start with N = 1.0, then tune K (and N) with known weights.
+float K = 1.0;
+float N = 1.0;
+
+float readAvgRaw(int samples = 32) {
+  long sum = 0;
+  for (int i = 0; i < samples; i++) {
+    sum += analogRead(FSR_PIN);
+    delay(2);
+  }
+  return sum / (float)samples;
+}
+
+void setup() {
+  Serial.begin(115200);
+  analogReadResolution(12);  // ESP32 only; remove on Uno
+}
+
+float avgGrams = 0;
+
+void loop() {
+  float raw = readAvgRaw();
+  float v   = raw * VCC / ADC_MAX;
+
+  if (raw < 10) {            // nothing pressing on it
+    Serial.println("0 g");
+  } else {
+    float rFsr = R_FIXED * (VCC - v) / v;    // FSR resistance in ohms
+    float cond = 1e6 / rFsr;                 // conductance in µS
+    float grams = K * pow(cond, N);
+    if (avgGrams==0) {
+      avgGrams = grams;
+    }
+    else {
+      avgGrams = (avgGrams + grams)/2;
+    }
+    
+    Serial.printf("raw=%.0f  R=%.0f ohm  ~%.0f g\n", raw, rFsr, grams);
+    Serial.println(avgGrams);
+  }
+  delay(1000);
+}

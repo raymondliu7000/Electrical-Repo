@@ -1,11 +1,11 @@
-//Mostly Claude, but edited
+
 
 // Pin Definitions for ESP32-C3
 const int TRIG_PIN = 3;
 const int ECHO_PIN = 2;
 
-// Most ESP32-C3 dev boards use GPIO 8 for the built-in LED (active LOW on many boards).
-// Change this to match your board or an external LED pin.
+// Built in LED is GPIO pin 8
+
 const int LED_PIN = 8;
 
 void setup() {

@@ -2,7 +2,7 @@
 
 //Weight sensing with Interlink FSR 406
 
-const int   FSR_PIN  = 1;        // any ADC-capable pin
+const int   FSR_PIN  = 1;        // ADC-capable pin
 const float VCC      = 3.3;
 const int   ADC_MAX  = 4095;     // 12-bit
 const float R_FIXED  = 10000.0;  // 10k pull-down
@@ -23,7 +23,7 @@ float readAvgRaw(int samples = 32) {
 
 void setup() {
   Serial.begin(115200);
-  analogReadResolution(12);  // ESP32 only; remove on Uno
+  analogReadResolution(12);  // ESP32 only
 }
 
 float avgGrams = 0;
